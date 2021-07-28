@@ -168,7 +168,7 @@ getIntegrationTests registerTODO scenarioService = do
     let allTestFiles = damlTestFiles ++ [("bond-trading/Test.daml", bondTradingLocation </> "Test.daml")]
     let (generatedFiles, nongeneratedFiles) = partition (\(f, _) -> takeFileName f == "ProposalDesugared.daml") allTestFiles
 
-    let outdir = "compiler/damlc/output"
+    let outdir = "/home/moritz/tmp/compiler/damlc/output"
     createDirectoryIfMissing True outdir
 
     dlintDataDir <- locateRunfiles $ mainWorkspace </> "compiler/damlc/daml-ide-core"
@@ -378,6 +378,7 @@ parseRange s =
 
 mainProj :: IdeState -> FilePath -> (String -> IO ()) -> NormalizedFilePath -> IO LF.Package
 mainProj service outdir log file = do
+    putStrLn outdir
     let proj = takeBaseName (fromNormalizedFilePath file)
 
     -- NOTE (MK): For some reason ghcide’s `prettyPrint` seems to fall over on Windows with `commitBuffer: invalid argument`.

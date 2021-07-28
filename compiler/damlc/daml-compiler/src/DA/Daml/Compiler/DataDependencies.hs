@@ -827,6 +827,7 @@ convType env reexported =
 
         LF.TNat n -> pure $
             HsTyLit noExt (HsNumTy NoSourceText (LF.fromTypeLevelNat n))
+        LF.TTypeRepGeneric _ -> error "TODO fixme"
   where
     convTypeLiftingConstraintTuples :: LF.Type -> Gen (HsType GhcPs)
     convTypeLiftingConstraintTuples = \case
@@ -1063,6 +1064,7 @@ refsFromType = go
         LF.TApp a b -> go a <> go b
         LF.TForall _ b -> go b
         LF.TStruct fields -> foldMap (go . snd) fields
+        LF.TTypeRepGeneric _ -> error "TODO fixme"
 
 refsFromDefTypeSyn :: LF.DefTypeSyn -> DL.DList Ref
 refsFromDefTypeSyn = refsFromType . LF.synType
