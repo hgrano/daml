@@ -1,0 +1,16 @@
+# Copyright (c) 2021 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+steps:
+  - bash: ci/configure-bazel.sh
+    displayName: 'Configure Bazel for root workspace'
+    env:
+      IS_FORK: $(System.PullRequest.IsFork)
+      # to upload to the bazel cache
+      GOOGLE_APPLICATION_CREDENTIALS_CONTENT: $(GOOGLE_APPLICATION_CREDENTIALS_CONTENT)
+  - powershell: 'bazel build //compiler/damlc/tests:platform-independence.dar -o platform-independence.dar'
+    displayName: 'Build platform independence test dar'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      targetPath: $(Build.StagingDirectory)/platform-independence.dar
+      artifactName: "platform-independence-dar"

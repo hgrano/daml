@@ -991,3 +991,8 @@ da_haskell_binary(
         "//libs-haskell/da-hs-base",
     ],
 )
+
+daml_compile(
+    name = "platform-independence",
+    srcs = glob(["PlatformIndependence.daml"]),
+)

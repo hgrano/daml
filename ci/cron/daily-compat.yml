@@ -67,6 +67,27 @@ jobs:
           pathtoPublish: '$(Build.StagingDirectory)'
           artifactName: 'Bazel Compatibility Logs'
 
+  - job: platform-independence-windows
+    timeoutInMinutes: 60
+    pool:
+      name: windows-pool
+      demands: assignment -equals default
+    steps:
+      - checkout: self
+      - template: ../clean-up.yml
+      - template: ../platform-independence-windows.yml
+
+  - job: platform-independence
+    dependsOn: platform-independence-windows
+    timeoutInMinutes: 60
+    pool:
+      name: ubuntu_20_04
+      demands: assignment -equals default
+    steps:
+      - checkout: self
+      - template: ../clean-up.yml
+      - template: ../platform-independence.yml
+
   - job: perf_speedy
     timeoutInMinutes: 120
     pool:
@@ -313,8 +334,10 @@ jobs:
 
   - job: report
     dependsOn: [compatibility_ts_libs, compatibility, compatibility_windows,
+                platform-independence-windows, platform-independence,
                 perf_speedy, perf_http_json, check_releases,
-                blackduck_scan, run_notices_pr_build]
+                blackduck_scan, run_notices_pr_build,
+                ]
     condition: and(succeededOrFailed(),
                    eq(variables['Build.SourceBranchName'], 'main'))
     pool:
@@ -324,6 +347,8 @@ jobs:
       compatibility_ts_libs: $[ dependencies.compatibility_ts_libs.result ]
       compatibility: $[ dependencies.compatibility.result ]
       compatibility_windows: $[ dependencies.compatibility_windows.result ]
+      platform_independence_windows: $[ dependencies.platform-independence-windows.result ]
+      platform_independence: $[ dependencies.platform-independence.result ]
       perf_speedy: $[ dependencies.perf_speedy.result ]
       speedy_perf: $[ dependencies.perf_speedy.outputs['out.speedy_perf'] ]
       perf_http_json: $[ dependencies.perf_http_json.result ]
@@ -346,6 +371,8 @@ jobs:
         if [[ "$(compatibility_ts_libs)" == "Succeeded"
            && "$(compatibility)" == "Succeeded"
            && "$(compatibility_windows)" == "Succeeded"
+           && "$(platform_independence-windows)" == "Succeeded"
+           && "$(platform_independence)" == "Succeeded"
            && "$(perf_speedy)" == "Succeeded"
            && "$(perf_http_json)" == "Succeeded"
            && "$(check_releases)" == "Succeeded"
