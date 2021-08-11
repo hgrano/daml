@@ -13,14 +13,10 @@ steps:
   - task: DownloadPipelineArtifact@0
     inputs:
       artifactName: 'platform-independence-dar'
-      targetPath: $(Build.SourcesDirectory)/platform-independence.dar
+      targetPath: $(Build.StagingDirectory)/platform-independence.dar
   - bash: |
       set -euo pipefail
       eval "$(dev-env/bin/dade-assist)"
-      bazel build //compiler/damlc/tests:platform-independence.dar -o platform-independence-linux.dar
-    displayName: 'Rebuild platform-independence.dar'
-  - bash: |
-      set -euo pipefail
-      eval "$(dev-env/bin/dade-assist)"
-      diff -q platform-independence-linux.dar $(Build.SourcesDirectory)/platform-independence.dar
-    displayName: 'Compare windows/linux dars'
+      bazel build //compiler/damlc/tests:platform-independence.dar
+      diff -q bazel-bin/compiler/damlc/tests/platform-independence.dar $(Build.StagingDirectory)/platform-independence.dar
+    displayName: 'Rebuild platform-independence.dar and compare Linux/Windows dars'
