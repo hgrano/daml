@@ -74,7 +74,6 @@ jobs:
       demands: assignment -equals default
     steps:
       - checkout: self
-      - template: ../clean-up.yml
       - template: ../platform-independence-windows.yml
 
   - job: platform_independence
