@@ -113,11 +113,10 @@ private class JdbcLedgerDao(
     dbDispatcher
       .executeSql(metrics.daml.index.db.getLedgerEndOffsetAndSequentialId)(storageBackend.ledgerEnd)
       .map { end =>
-        val EventSequentialIdBeforeBegin = 0L
         (end.lastOffset, end.lastEventSeqId) match {
           case (Some(offset), Some(seqId)) => (offset, seqId)
-          case (Some(offset), None) => (offset, EventSequentialIdBeforeBegin)
-          case (None, None) => (Offset.beforeBegin, EventSequentialIdBeforeBegin)
+          case (Some(offset), None) => (offset, EventSequentialId.zero)
+          case (None, None) => (Offset.beforeBegin, EventSequentialId.zero)
           case (None, Some(seqId)) =>
             throw InvalidLedgerEnd(
               s"Parameters table in invalid state: ledger_end=None, ledger_end_sequential_id=$seqId"

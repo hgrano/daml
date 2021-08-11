@@ -23,7 +23,7 @@ import com.daml.platform.indexer.parallel.AsyncSupport._
 import com.daml.platform.indexer.{IndexFeedHandle, Indexer}
 import com.daml.platform.store.appendonlydao.DbDispatcher
 import com.daml.platform.store.appendonlydao.events.{CompressionStrategy, LfValueTranslation}
-import com.daml.platform.store.backend
+import com.daml.platform.store.{EventSequentialId, backend}
 import com.daml.platform.store.backend.DataSourceStorageBackend.DataSourceConfig
 import com.daml.platform.store.backend.{DbDto, StorageBackend}
 import com.google.common.util.concurrent.ThreadFactoryBuilder
@@ -174,7 +174,10 @@ object ParallelIndexerFactory {
                 )
                 .flatMap { initialized =>
                   val (killSwitch, completionFuture) =
-                    ingest(initialized.lastEventSeqId.getOrElse(0L), dbDispatcher)(
+                    ingest(
+                      initialized.lastEventSeqId.getOrElse(EventSequentialId.zero),
+                      dbDispatcher,
+                    )(
                       readService.stateUpdates(beginAfter = initialized.lastOffset)
                     )
                       .viaMat(KillSwitches.single)(Keep.right[NotUsed, UniqueKillSwitch])
