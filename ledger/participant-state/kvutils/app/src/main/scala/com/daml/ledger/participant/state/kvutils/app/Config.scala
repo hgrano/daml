@@ -513,7 +513,7 @@ object Config {
           )
 
         // TODO append-only: remove after removing support for the current (mutating) schema
-        opt[Unit]("index-append-only-schema")
+        opt[Unit]("index-append-only-schema-unsafe")
           .optional()
           .hidden()
           .text(
@@ -521,7 +521,7 @@ object Config {
           )
           .action((_, config) => config.copy(enableAppendOnlySchema = true))
 
-        opt[Unit]("mutable-contract-state-cache")
+        opt[Unit]("mutable-contract-state-cache-unsafe")
           .optional()
           .hidden()
           .text(
