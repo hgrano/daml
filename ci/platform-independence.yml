@@ -12,16 +12,16 @@ steps:
       GOOGLE_APPLICATION_CREDENTIALS_CONTENT: $(GOOGLE_APPLICATION_CREDENTIALS_CONTENT)
   - task: DownloadPipelineArtifact@0
     inputs:
-      artifactName: 'platform-independence-dar'
+      artifactName: 'platform-independence-dalf'
       targetPath: $(Build.StagingDirectory)/
   - bash: |
       set -euo pipefail
       eval "$(dev-env/bin/dade-assist)"
-      bazel build //compiler/damlc/tests:platform-independence.dar
-      diff bazel-bin/compiler/damlc/tests/platform-independence.dar $(Build.StagingDirectory)/platform-independence.dar
-    displayName: 'Rebuild platform-independence.dar and compare Linux/Windows dars'
+      bazel build //compiler/damlc/tests:platform-independence.dalf
+      diff bazel-bin/compiler/damlc/tests/platform-independence.dalf $(Build.StagingDirectory)/platform-independence.dalf
+    displayName: 'Rebuild platform-independence.dalf and compare Linux/Windows dalfs'
   - task: PublishPipelineArtifact@0
     condition: succeededOrFailed()
     inputs:
-      targetPath: bazel-bin/compiler/damlc/tests/platform-independence.dar
-      artifactName: platform-independence-dar-linux
+      targetPath: bazel-bin/compiler/damlc/tests/platform-independence.dalf
+      artifactName: platform-independence-dalf-linux
