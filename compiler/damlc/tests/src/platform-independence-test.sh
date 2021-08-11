@@ -7,9 +7,4 @@ set -euo pipefail
 DAR1=$(sha1sum $1)
 DAR2=$(sha1sum $2)
 
-if [ $DAR1 -eq $DAR2 ]
-then
-  exit 0
-else
-  exit 1
-fi
+[ $DAR1 -eq $DAR2 ]
