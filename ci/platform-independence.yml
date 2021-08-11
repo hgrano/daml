@@ -20,5 +20,7 @@ steps:
       bazel build //compiler/damlc/tests:platform-independence.dar -o platform-independence-linux.dar
     displayName: 'Rebuild platform-independence.dar'
   - bash: |
+      set -euo pipefail
+      eval "$(dev-env/bin/dade-assist)"
       ./compiler/damlc/tests/platform-independence-test.sh platform-independence-linux.dar $(Build.SourcesDirectory)/platform-independence.dar
     displayName: 'Compare windows/linux dars'
