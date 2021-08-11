@@ -22,5 +22,5 @@ steps:
   - bash: |
       set -euo pipefail
       eval "$(dev-env/bin/dade-assist)"
-      ./compiler/damlc/tests/platform-independence-test.sh platform-independence-linux.dar $(Build.SourcesDirectory)/platform-independence.dar
+      diff -q platform-independence-linux.dar $(Build.SourcesDirectory)/platform-independence.dar
     displayName: 'Compare windows/linux dars'
