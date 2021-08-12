@@ -11,7 +11,7 @@ import anorm.SqlParser.get
 import com.daml.ledger.api.v1.command_completion_service.CompletionStreamResponse
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Ref
-import com.daml.logging.LoggingContext
+import com.daml.logging.{ContextualizedLogger, LoggingContext}
 import com.daml.platform.store.appendonlydao.events.{ContractId, Key, Party}
 import com.daml.platform.store.backend.EventStorageBackend.FilterParams
 import com.daml.platform.store.backend.common.{
@@ -36,6 +36,8 @@ private[backend] object PostgresStorageBackend
     extends StorageBackend[AppendOnlySchema.Batch]
     with CommonStorageBackend[AppendOnlySchema.Batch]
     with EventStorageBackendTemplate {
+
+  private val logger: ContextualizedLogger = ContextualizedLogger.get(this.getClass)
 
   override def insertBatch(
       connection: Connection,
@@ -85,6 +87,37 @@ private[backend] object PostgresStorageBackend
   }
 
   override val duplicateKeyError: String = "duplicate key"
+
+  def getPostgresVersion(connection: Connection): Option[(Int, Int, Int)] = {
+    val version = SQL"SHOW server_version".as(get[String](1).single)(connection)
+    val versionPattern = """(\d)[.](\d)[.](\d)""".r
+    version match {
+      case versionPattern(major, minor, patch) => Some(major.toInt, minor.toInt, patch.toInt)
+      case _ => None
+    }
+  }
+
+  override def checkCompatibility(
+      connection: Connection
+  )(implicit loggingContext: LoggingContext): Unit = {
+    getPostgresVersion(connection) match {
+      case Some((major, minor, patch)) =>
+        if (major.toInt < 10) {
+          logger.error(
+            "Deprecated Postgres version. " +
+              s"Found Postgres version $major.$minor.$patch., minimum required Postgres version is 10. " +
+              "This application will continue running but is at risk of data loss, as Postgres < 10 does not support crash-fault tolerant hash indices. " +
+              "Please upgrade your Postgres database to version 10 or later to fix this issue. " +
+              "In the future, this deprecation warning may be upgraded to a fatal error."
+          )
+        }
+      case None =>
+        logger.warn(
+          s"Could not determine the version of the Postgres database. Please verify that this application is compatible with this Postgres version."
+        )
+    }
+    ()
+  }
 
   override def commandCompletions(
       startExclusive: Offset,

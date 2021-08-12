@@ -54,6 +54,11 @@ private[backend] object OracleStorageBackend
 
   override def duplicateKeyError: String = "unique constraint"
 
+  override def checkCompatibility(connection: Connection)(implicit
+      loggingContext: LoggingContext
+  ): Unit =
+    ()
+
   val SQL_INSERT_COMMAND: String =
     """merge into participant_command_submissions pcs
       |using dual

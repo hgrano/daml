@@ -51,6 +51,7 @@ trait StorageBackend[DB_BATCH]
     with DBLockStorageBackend {
   def reset(connection: Connection): Unit
   def duplicateKeyError: String // TODO: Avoid brittleness of error message checks
+  def checkCompatibility(connection: Connection)(implicit loggingContext: LoggingContext): Unit
 }
 
 trait IngestionStorageBackend[DB_BATCH] {
