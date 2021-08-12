@@ -55,6 +55,6 @@ function bazel() {
 # which is a workaround for this problem.
 bazel shutdown
 
-bazel build //compiler/damlc/tests:platform-independence.dalf
+bazel build //compiler/damlc/tests:platform-independence.dar
 
 cp bazel-bin/compiler/damlc/tests/platform-independence.dalf $ARTIFACT_DIRS/

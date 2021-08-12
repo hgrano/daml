@@ -8,9 +8,9 @@ steps:
       IS_FORK: $(System.PullRequest.IsFork)
       # to upload to the bazel cache
       GOOGLE_APPLICATION_CREDENTIALS_CONTENT: $(GOOGLE_APPLICATION_CREDENTIALS_CONTENT)
-  - powershell: .\ci\platform-independence-dalf.ps1
-    displayName: 'Build platform independence test dalf'
+  - powershell: .\ci\platform-independence-dar.ps1
+    displayName: 'Build platform independence test dar'
   - task: PublishPipelineArtifact@0
     inputs:
-      targetPath: $(Build.StagingDirectory)/platform-independence.dalf
-      artifactName: "platform-independence-dalf"
+      targetPath: $(Build.StagingDirectory)/platform-independence.dar.
+      artifactName: "platform-independence-dar"
