@@ -24,7 +24,8 @@ import com.daml.ledger.api.v1.ledger_offset.LedgerOffset.LedgerBoundary.LEDGER_B
 import com.daml.ledger.api.v1.ledger_offset.LedgerOffset.Value.{Absolute, Boundary}
 import com.daml.ledger.client.services.commands.tracker.CompletionResponse
 import com.daml.ledger.client.services.commands.tracker.CompletionResponse.{
-  CompletionResponse,
+  CompletionFailure,
+  CompletionSuccess,
   NotOkResponse,
 }
 import com.daml.util.Ctx
@@ -60,7 +61,8 @@ class CommandTrackerFlowTest
   private val shortDuration = JDuration.ofSeconds(1L)
 
   private lazy val submissionSource = TestSource.probe[Ctx[Int, SubmitRequest]]
-  private lazy val resultSink = TestSink.probe[Ctx[Int, CompletionResponse]](system)
+  private lazy val resultSink =
+    TestSink.probe[Ctx[Int, Either[CompletionFailure, CompletionSuccess]]](system)
 
   private val mrt = Instant.EPOCH.plus(shortDuration)
   private val commandId = "commandId"
@@ -69,6 +71,7 @@ class CommandTrackerFlowTest
       commandId,
       Some(Status(Code.ABORTED.value)),
     )
+  private val successStatus = Status(Code.OK.value)
   private val context = 1
   private val submitRequest = newSubmitRequest(commandId)
   private def newSubmitRequest(commandId: String, dedupTime: Option[JDuration] = None) = Ctx(
@@ -86,7 +89,7 @@ class CommandTrackerFlowTest
 
   private case class Handle(
       submissions: TestPublisher.Probe[Ctx[Int, SubmitRequest]],
-      completions: TestSubscriber.Probe[Ctx[Int, CompletionResponse]],
+      completions: TestSubscriber.Probe[Ctx[Int, Either[CompletionFailure, CompletionSuccess]]],
       whatever: Future[Map[String, Int]],
       completionsStreamMock: CompletionStreamMock,
   )
@@ -296,7 +299,9 @@ class CommandTrackerFlowTest
 
         completionStreamMock.send(successfulCompletion(commandId))
 
-        results.expectNext(Ctx(context, Right(CompletionResponse.CompletionSuccess(commandId, ""))))
+        results.expectNext(
+          Ctx(context, Right(CompletionResponse.CompletionSuccess(commandId, "", successStatus)))
+        )
         succeed
       }
 
@@ -355,7 +360,9 @@ class CommandTrackerFlowTest
         // The order below is important to reproduce the issue described in DPP-285.
         results.expectNoMessage()
         results.request(1)
-        results.expectNext(Ctx(context, Right(CompletionResponse.CompletionSuccess(commandId, ""))))
+        results.expectNext(
+          Ctx(context, Right(CompletionResponse.CompletionSuccess(commandId, "", successStatus)))
+        )
         succeed
       }
 
@@ -373,7 +380,9 @@ class CommandTrackerFlowTest
         completionStreamMock.send(successfulCompletion(commandId))
         completionStreamMock.send(successfulCompletion(commandId))
 
-        results.expectNext(Ctx(context, Right(CompletionResponse.CompletionSuccess(commandId, ""))))
+        results.expectNext(
+          Ctx(context, Right(CompletionResponse.CompletionSuccess(commandId, "", successStatus)))
+        )
         results.expectNoMessage(1.second)
         succeed
       }
@@ -428,7 +437,7 @@ class CommandTrackerFlowTest
 
         results.expectNextUnorderedN(commandIds.map { commandId =>
           val successCompletion =
-            Right(CompletionResponse.CompletionSuccess(commandId, ""))
+            Right(CompletionResponse.CompletionSuccess(commandId, "", successStatus))
           Ctx(context, successCompletion)
         })
         succeed
@@ -459,7 +468,7 @@ class CommandTrackerFlowTest
             _ = results.expectNext(
               Ctx(
                 context,
-                Right(CompletionResponse.CompletionSuccess(commandId, "")),
+                Right(CompletionResponse.CompletionSuccess(commandId, "", successStatus)),
               )
             )
           } yield ()
@@ -499,7 +508,7 @@ class CommandTrackerFlowTest
   }
 
   private def successfulCompletion(commandId: String) =
-    CompletionStreamElement.CompletionElement(Completion(commandId, Some(Status())))
+    CompletionStreamElement.CompletionElement(Completion(commandId, Some(successStatus)))
 
   private def checkPoint(ledgerOffset: LedgerOffset) =
     CompletionStreamElement.CheckpointElement(
