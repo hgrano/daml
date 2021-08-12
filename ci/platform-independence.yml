@@ -25,5 +25,5 @@ steps:
       unzip -d $DIR1 bazel-bin/compiler/damlc/tests/platform-independence.dar
       unzip -d $DIR2 $(Build.StagingDirectory)/platform-independence.dar
       # hie/hi files may differ.
-      diff -r -x '*.hie' -x '*.hi' $DIR1 $DIR2
+      diff -r --strip-trailing-cr -x '*.hie' -x '*.hi' $DIR1 $DIR2
     displayName: 'Rebuild platform-independence.dar and compare contained Linux/Windows dalfs'
