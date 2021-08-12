@@ -20,8 +20,3 @@ steps:
       bazel build //compiler/damlc/tests:platform-independence.dalf
       diff bazel-bin/compiler/damlc/tests/platform-independence.dalf $(Build.StagingDirectory)/platform-independence.dalf
     displayName: 'Rebuild platform-independence.dalf and compare Linux/Windows dalfs'
-  - task: PublishPipelineArtifact@0
-    condition: succeededOrFailed()
-    inputs:
-      targetPath: bazel-bin/compiler/damlc/tests/platform-independence.dalf
-      artifactName: platform-independence-dalf-linux
