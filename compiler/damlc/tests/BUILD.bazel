@@ -994,8 +994,8 @@ da_haskell_binary(
 
 daml_compile_with_dalf(
     name = "platform-independence",
+    srcs = glob(["PlatformIndependence.daml"]),
     # don't turn warnings into errors, we have a missing pattern on purpose in
     # PlatformIndependence.daml.
     ghc_options = [],
-    srcs = glob(["PlatformIndependence.daml"]),
 )
