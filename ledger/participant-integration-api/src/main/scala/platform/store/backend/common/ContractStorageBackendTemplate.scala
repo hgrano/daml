@@ -386,10 +386,12 @@ trait ContractStorageBackendTemplate extends ContractStorageBackend {
     SQL"""
          WITH last_contract_key_create AS (
                 SELECT participant_events.*
-                  FROM participant_events, parameters
+                  FROM participant_events#${if (validAt.isEmpty) ", parameters" else ""}
                  WHERE event_kind = 10 -- create
                    AND create_key_hash = ${key.hash}
-                   AND event_sequential_id <= parameters.ledger_end_sequential_id
+                   #${if (validAt.isEmpty)
+      "AND event_sequential_id <= parameters.ledger_end_sequential_id"
+    else ""}
                        -- do NOT check visibility here, as otherwise we do not abort the scan early
                    $validAtClause
                  ORDER BY event_sequential_id DESC
@@ -400,9 +402,11 @@ trait ContractStorageBackendTemplate extends ContractStorageBackend {
          WHERE $lastContractKeyFlatEventWitnessesClause -- check visibility only here
            NOT EXISTS       -- check no archival visible
                 (SELECT 1
-                   FROM participant_events, parameters
+                   FROM participant_events#${if (validAt.isEmpty) ", parameters" else ""}
                   WHERE event_kind = 20 AND -- consuming exercise
-                    event_sequential_id <= parameters.ledger_end_sequential_id AND
+                    #${if (validAt.isEmpty)
+      "event_sequential_id <= parameters.ledger_end_sequential_id AND"
+    else ""}
                     $participantEventsFlatEventWitnessesClause
                     contract_id = last_contract_key_create.contract_id
                     $validAtClause
