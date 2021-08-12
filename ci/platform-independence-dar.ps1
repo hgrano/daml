@@ -57,4 +57,4 @@ bazel shutdown
 
 bazel build //compiler/damlc/tests:platform-independence.dar
 
-cp bazel-bin/compiler/damlc/tests/platform-independence.dalf $ARTIFACT_DIRS/
+cp bazel-bin/compiler/damlc/tests/platform-independence.dar $ARTIFACT_DIRS/
