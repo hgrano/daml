@@ -5,8 +5,9 @@ package com.daml.platform.apiserver.services.tracking
 
 import akka.stream.QueueOfferResult
 import com.daml.ledger.client.services.commands.tracker.CompletionResponse.{
-  CompletionResponse,
+  CompletionSuccess,
   StartingExecutionFailure,
+  TrackedCompletionFailure,
 }
 import io.grpc.{Status => GrpcStatus}
 
@@ -38,7 +39,7 @@ private[tracking] object HandleOfferResult {
   }
 
   def completePromise(
-      promise: Promise[CompletionResponse]
+      promise: Promise[Either[TrackedCompletionFailure, CompletionSuccess]]
   ): PartialFunction[Try[QueueOfferResult], Unit] =
     toGrpcStatus.andThen(status => {
       promise.trySuccess(Left(StartingExecutionFailure(status)))
