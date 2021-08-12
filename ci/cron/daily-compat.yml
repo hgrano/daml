@@ -86,7 +86,7 @@ jobs:
     dependsOn: platform_independence_windows
     timeoutInMinutes: 60
     pool:
-      name: ubuntu_20_04
+      name: $(pool)
       demands: assignment -equals default
     steps:
       - checkout: self
