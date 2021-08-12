@@ -77,6 +77,12 @@ jobs:
       - template: ../platform-independence-windows.yml
 
   - job: platform_independence
+    strategy:
+      matrix:
+        linux:
+          pool: ubuntu_20_04
+        macos:
+          pool: macOS-pool
     dependsOn: platform_independence_windows
     timeoutInMinutes: 60
     pool:
